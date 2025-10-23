@@ -64,7 +64,7 @@ curl -u username:password \
 
 ### GET /template
 
-List all stored templates.
+List all stored templates with detailed information.
 
 **Example:**
 ```bash
@@ -74,11 +74,33 @@ curl -u username:password http://localhost:3030/template
 **Response:**
 ```json
 {
-  "templates": ["my-invoice.odt", "report-template.docx"],
-  "count": 2,
-  "templatePath": "/path/to/templates"
+  "success": true,
+  "data": [
+    {
+      "templateId": "my-invoice.odt",
+      "filename": "my-invoice.odt",
+      "size": 15234,
+      "createdAt": "2023-04-01T12:00:00.000Z",
+      "updatedAt": "2023-04-01T12:00:00.000Z"
+    },
+    {
+      "templateId": "report-template.docx",
+      "filename": "report-template.docx",
+      "size": 23456,
+      "createdAt": "2023-04-02T14:30:00.000Z",
+      "updatedAt": "2023-04-02T14:30:00.000Z"
+    }
+  ],
+  "count": 2
 }
 ```
+
+The response includes standard template information similar to the Carbone.io Cloud API:
+- `templateId`: Unique identifier for the template (filename)
+- `filename`: Original filename of the template
+- `size`: File size in bytes
+- `createdAt`: Timestamp when the template was created
+- `updatedAt`: Timestamp when the template was last modified
 
 ### DELETE /template/:fileId
 
