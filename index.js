@@ -1,5 +1,6 @@
 const path = require(`path`);
 const fs = require(`fs-extra`);
+const crypto = require(`crypto`);
 const _ = require(`lodash`);
 const util = require(`util`);
 const carbone = require(`carbone`);
@@ -18,10 +19,9 @@ const username = process.env.USERNAME || undefined;
 const password = process.env.PASSWORD || undefined;
 
 if (!username || !password) {
-  console.error(
-    "missing authentication credentials. Please pass USERNAME and PASSWORD environment variables"
+  console.warn(
+    "WARNING: No authentication credentials provided. API will be accessible without authentication."
   );
-  process.exit(-1);
 }
 
 function configureStorage() {
@@ -75,9 +75,13 @@ const transport = nodemailer.createTransport(config.smtp);
 const storage = configureStorage();
 
 function auth() {
-  return basicAuth({
-    users: { [username]: password }
-  });
+  if (username && password) {
+    return basicAuth({
+      users: { [username]: password }
+    });
+  }
+  // Return a no-op middleware if no credentials
+  return (req, res, next) => next();
 }
 
 app.use(auth());
@@ -125,6 +129,11 @@ app.post("/template", upload.single(`template`), async (req, res) => {
   try {
     const templateData = await fs.readFile(template.path);
     
+    // Calculate template hash
+    const hasher = crypto.createHash('sha256');
+    hasher.update(templateData);
+    const templateHash = hasher.digest('hex');
+    
     await new Promise((resolve, reject) => {
       carbone.addTemplate(fileId, templateData, (err) => {
         if (err) {
@@ -139,7 +148,8 @@ app.post("/template", upload.single(`template`), async (req, res) => {
 
     res.status(201).json({ 
       message: "Template added successfully",
-      fileId: fileId
+      fileId: fileId,
+      templateId: templateHash
     });
   } catch (e) {
     console.error(e);
@@ -195,9 +205,16 @@ app.get("/template", async (req, res) => {
         try {
           const filePath = path.join(templateDir, filename);
           const stats = await fs.stat(filePath);
+          const fileData = await fs.readFile(filePath);
+          
+          // Calculate template hash
+          const hasher = crypto.createHash('sha256');
+          hasher.update(fileData);
+          const templateHash = hasher.digest('hex');
           
           return {
-            templateId: filename,
+            templateId: templateHash,
+            fileId: filename,
             filename: filename,
             size: stats.size,
             createdAt: stats.birthtime,
