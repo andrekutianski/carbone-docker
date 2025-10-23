@@ -184,19 +184,46 @@ app.get("/template", async (req, res) => {
     const files = await fs.readdir(templateDir);
     // Filter to show only template files (common document formats)
     const templateExtensions = ['.odt', '.ods', '.odp', '.docx', '.xlsx', '.pptx', '.txt', '.html', '.xml'];
-    const templates = files.filter(file => 
+    const templateFiles = files.filter(file => 
       !file.startsWith('.') && 
       templateExtensions.some(ext => file.endsWith(ext))
     );
 
+    // Get detailed information for each template
+    const templates = await Promise.all(
+      templateFiles.map(async (filename) => {
+        try {
+          const filePath = path.join(templateDir, filename);
+          const stats = await fs.stat(filePath);
+          
+          return {
+            templateId: filename,
+            filename: filename,
+            size: stats.size,
+            createdAt: stats.birthtime,
+            updatedAt: stats.mtime
+          };
+        } catch (err) {
+          console.error(`Error getting stats for ${filename}:`, err);
+          return null;
+        }
+      })
+    );
+
+    // Filter out any null entries from failed stat calls
+    const validTemplates = templates.filter(t => t !== null);
+
     res.status(200).json({ 
-      templates: templates,
-      count: templates.length,
-      templatePath: templateDir
+      success: true,
+      data: validTemplates,
+      count: validTemplates.length
     });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: "Failed to list templates" });
+    return res.status(500).json({ 
+      success: false,
+      error: "Failed to list templates" 
+    });
   }
 });
 
