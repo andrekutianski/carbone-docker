@@ -16,3 +16,10 @@
 - run with `sh request-with-curl.sh`
 - submits _testdata.min.json_ and _template.odt_ to a running API server
 - creates _invoice.pdf_
+
+## Template Management Demo
+
+- requires cURL CLI
+- run with `sh template-management-demo.sh`
+- demonstrates uploading and listing templates via the `/template` API
+- shows how to manage templates stored in Carbone

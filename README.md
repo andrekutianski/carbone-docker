@@ -34,6 +34,69 @@ By default, generated files are sent directly to the client. Set the _STORAGE_PA
 - files will be retrievable via HTTP GET (authenticated) on `/files/<hash>`
 - requests to `/render` will not get the file in the response body. Instead, they will be redirected to the above location (status code 301).
 
+## Template Management
+
+The API now includes template management endpoints that allow you to pre-upload templates to Carbone and reuse them:
+
+### POST /template
+
+Upload a template to Carbone's storage for reuse.
+
+**Parameters:**
+- `template` (file, required): The template file to upload
+- `fileId` (string, optional): Custom identifier for the template. If not provided, uses the original filename
+
+**Example:**
+```bash
+curl -u username:password \
+  -F "template=@invoice-template.odt" \
+  -F "fileId=my-invoice.odt" \
+  http://localhost:3030/template
+```
+
+**Response:**
+```json
+{
+  "message": "Template added successfully",
+  "fileId": "my-invoice.odt"
+}
+```
+
+### GET /template
+
+List all stored templates.
+
+**Example:**
+```bash
+curl -u username:password http://localhost:3030/template
+```
+
+**Response:**
+```json
+{
+  "templates": ["my-invoice.odt", "report-template.docx"],
+  "count": 2,
+  "templatePath": "/path/to/templates"
+}
+```
+
+### DELETE /template/:fileId
+
+Remove a template from Carbone's storage.
+
+**Example:**
+```bash
+curl -u username:password -X DELETE http://localhost:3030/template/my-invoice.odt
+```
+
+**Response:**
+```json
+{
+  "message": "Template removed successfully",
+  "fileId": "my-invoice.odt"
+}
+```
+
 ## How to consume exposed API ?
 
 ~~The simpliest way to use this image is to use `node` and install [`carbone-connect` package](https://npmjs.org/carbone-connect).~~ We extended the API with authentication, so this doesn't work anymore. :(

@@ -109,6 +109,97 @@ app.get("/files/:hash", async (req, res) => {
   res.sendFile(filePath);
 });
 
+app.post("/template", upload.single(`template`), async (req, res) => {
+  const template = req.file;
+  
+  if (!template) {
+    return res.status(400).json({ error: "No template file provided" });
+  }
+
+  const fileId = req.body.fileId || template.originalname;
+
+  if (!fileId) {
+    return res.status(400).json({ error: "fileId is required" });
+  }
+
+  try {
+    const templateData = await fs.readFile(template.path);
+    
+    await new Promise((resolve, reject) => {
+      carbone.addTemplate(fileId, templateData, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    await fs.remove(template.path);
+
+    res.status(201).json({ 
+      message: "Template added successfully",
+      fileId: fileId
+    });
+  } catch (e) {
+    console.error(e);
+    await fs.remove(template.path).catch(() => {});
+    return res.status(500).json({ error: "Failed to add template" });
+  }
+});
+
+app.delete("/template/:fileId", async (req, res) => {
+  const fileId = req.params.fileId;
+
+  if (!fileId) {
+    return res.status(400).json({ error: "fileId is required" });
+  }
+
+  try {
+    await new Promise((resolve, reject) => {
+      carbone.removeTemplate(fileId, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    res.status(200).json({ 
+      message: "Template removed successfully",
+      fileId: fileId
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: "Failed to remove template" });
+  }
+});
+
+app.get("/template", async (req, res) => {
+  try {
+    // Carbone stores templates in process.cwd() by default
+    const templateDir = process.cwd();
+    
+    const files = await fs.readdir(templateDir);
+    // Filter to show only template files (common document formats)
+    const templateExtensions = ['.odt', '.ods', '.odp', '.docx', '.xlsx', '.pptx', '.txt', '.html', '.xml'];
+    const templates = files.filter(file => 
+      !file.startsWith('.') && 
+      templateExtensions.some(ext => file.endsWith(ext))
+    );
+
+    res.status(200).json({ 
+      templates: templates,
+      count: templates.length,
+      templatePath: templateDir
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: "Failed to list templates" });
+  }
+});
+
 app.post("/render", upload.single(`template`), async (req, res) => {
   const template = req.file;
   const originalNameWOExt = template.originalname
