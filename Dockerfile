@@ -1,6 +1,6 @@
-FROM node:12
+FROM node:20
 
-ENV LIBREOFFICE_VERSION=6.3.3.1
+ENV LIBREOFFICE_VERSION=7.3.7.2
 
 # install LibreOffice and its dependencies
 WORKDIR /tmp

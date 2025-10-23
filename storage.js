@@ -10,7 +10,7 @@ class Storage {
   // try writing a file to confirm the location to store files
   // at works as intended
   validate() {
-    fs.mkdirpSync(this.rootPath);
+    fs.ensureDirSync(this.rootPath);
     const testFilePath = path.join(this.rootPath, "test.txt");
     const testFileContent =
       "This is a test file to confirm the carbone server can write to this directory.";
@@ -30,7 +30,7 @@ class Storage {
     const hash = hasher.digest("hex");
 
     const directoryPath = path.join(this.rootPath, hash);
-    fs.mkdirSync(directoryPath);
+    fs.ensureDirSync(directoryPath);
     const filePath = path.join(directoryPath, "result.pdf");
     fs.writeFileSync(filePath, data);
 
