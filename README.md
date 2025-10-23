@@ -38,6 +38,22 @@ By default, generated files are sent directly to the client. Set the _STORAGE_PA
 
 ~~The simpliest way to use this image is to use `node` and install [`carbone-connect` package](https://npmjs.org/carbone-connect).~~ We extended the API with authentication, so this doesn't work anymore. :(
 
+## Version Information
+
+This project has been updated to use:
+- **Carbone v3.5.6** (upgraded from v2.1.0)
+- **Node.js v20** (upgraded from v12)
+- **LibreOffice v7.3.7.2** (upgraded from v6.3.3.1)
+
+All custom code has been tested and verified to be compatible with Carbone v3. The API remains backward compatible with existing integrations.
+
+### Dependencies Updated
+
+For security and compatibility, the following dependencies have been updated:
+- body-parser, express, lodash, multer, nodemailer, telejson, and supporting libraries
+
+All custom formatter patterns and render operations continue to work as expected.
+
 ## From carbone.io website
 
 _Fast, Simple and Powerful report generator in any format PDF, DOCX, XLSX, ODT, PPTX, ODS [, ...]_
