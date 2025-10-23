@@ -16,7 +16,7 @@ RUN dpkg -i *.deb
 # install node package
 RUN mkdir -p /home/node/carbone-api/node_modules && chown -R node:node /home/node/carbone-api
 WORKDIR /home/node/carbone-api
-COPY package.json package-lock.json ./
+COPY --chown=node:node package.json package-lock.json ./
 USER node
 RUN npm install
 COPY --chown=node:node . .
